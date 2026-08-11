@@ -236,7 +236,8 @@ std::vector<float> renderSamples(
         }
         if (count > 0) localBase /= static_cast<float>(count + 1);
         const float vibrato = edit.found && edit.vibrato >= 0.0f ? edit.vibrato : vibratoPreservation;
-        float desired = localBase + (midi - localBase) * clamp01(vibrato) + (static_cast<float>(lockedNote) - localBase) * amount;
+        const float humanizedAmount = amount * (1.0f - 0.45f * clamp01(humanize));
+        float desired = localBase + (midi - localBase) * clamp01(vibrato) + (static_cast<float>(lockedNote) - localBase) * humanizedAmount;
         if (i == 0 || smoothedMidi == 0.0f) smoothedMidi = desired;
         const float timeConstant = std::max(0.0f, retuneMs) * (0.35f + 0.65f * clamp01(transition));
         const float alpha = timeConstant < 1.0f ? 1.0f : 1.0f - std::exp(-hopSeconds * 1000.0f / timeConstant);
