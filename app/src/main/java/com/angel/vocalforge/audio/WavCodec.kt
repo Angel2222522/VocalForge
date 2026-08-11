@@ -75,7 +75,7 @@ object WavCodec {
                         bits == 24 -> {
                             val value = (bytes[offset].toInt() and 0xFF) or
                                 ((bytes[offset + 1].toInt() and 0xFF) shl 8) or
-                                (bytes[offset + 2].toInt() shl 16)
+                                ((bytes[offset + 2].toInt() and 0xFF) shl 16)
                             val signed = if (value and 0x800000 != 0) value - 0x1000000 else value
                             signed / 8388608.0
                         }
