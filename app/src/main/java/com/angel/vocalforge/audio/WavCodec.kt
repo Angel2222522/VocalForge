@@ -43,7 +43,8 @@ object WavCodec {
                         b.short // block align
                         bits = b.short.toInt() and 0xFFFF
                         if (format == 0xFFFE && bytes.size >= 40) {
-                            format = b.position(24).short.toInt() and 0xFFFF
+                            b.position(24)
+                            format = b.short.toInt() and 0xFFFF
                         }
                     }
                     DATA -> dataBytes = input.readBytesExact(size)
