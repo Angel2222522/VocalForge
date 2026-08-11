@@ -1,0 +1,9 @@
+<resources>
+    <color name="vf_black">#08090C</color>
+    <color name="vf_surface">#11131A</color>
+    <color name="vf_surface_raised">#191C25</color>
+    <color name="vf_teal">#55E0C1</color>
+    <color name="vf_lilac">#B9A8FF</color>
+    <color name="vf_text">#F2F1F7</color>
+    <color name="vf_muted">#9697A4</color>
+</resources>
