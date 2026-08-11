@@ -43,7 +43,8 @@ object WavCodec {
                         b.short // block align
                         bits = b.short.toInt() and 0xFFFF
                         if (format == 0xFFFE && bytes.size >= 40) {
-                            format = b.position(24).short.toInt() and 0xFFFF
+                            b.position(24)
+                            format = b.short.toInt() and 0xFFFF
                         }
                     }
                     DATA -> dataBytes = input.readBytesExact(size)
@@ -74,7 +75,7 @@ object WavCodec {
                         bits == 24 -> {
                             val value = (bytes[offset].toInt() and 0xFF) or
                                 ((bytes[offset + 1].toInt() and 0xFF) shl 8) or
-                                (bytes[offset + 2].toInt() shl 16)
+                                ((bytes[offset + 2].toInt() and 0xFF) shl 16)
                             val signed = if (value and 0x800000 != 0) value - 0x1000000 else value
                             signed / 8388608.0
                         }

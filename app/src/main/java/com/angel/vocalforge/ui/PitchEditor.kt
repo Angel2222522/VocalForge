@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
@@ -108,7 +109,11 @@ fun PitchEditor(
         }
 
         if (selectionEnd > selectionStart) {
-            drawRect(Color(0x3355E0C1), Offset(xForTime(selectionStart), 0f), Offset(xForTime(selectionEnd), height))
+            drawRect(
+                color = Color(0x3355E0C1),
+                topLeft = Offset(xForTime(selectionStart), 0f),
+                size = Size(xForTime(selectionEnd) - xForTime(selectionStart), height)
+            )
         }
 
         // Detected pitch is teal; the target contour is lilac. The target is a
