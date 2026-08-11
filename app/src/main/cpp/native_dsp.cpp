@@ -60,6 +60,8 @@ std::vector<Frame> analyzeSamples(const std::vector<float>& input, int sampleRat
     const int minLag = std::max(2, sampleRate / 1100);
     const int maxLag = std::min(frameSize / 2 - 2, sampleRate / 55);
     std::vector<float> window(frameSize);
+    constexpr int decimation = 4;
+    std::vector<float> coarseWindow(frameSize / decimation);
 
     for (int frame = 0; frame < frameCount; ++frame) {
         const int center = frame * hop;
@@ -75,11 +77,22 @@ std::vector<Frame> analyzeSamples(const std::vector<float>& input, int sampleRat
         rawEnergy[frame] = rms;
         if (rms < 0.004f) continue;
 
+        for (int i = 0; i < static_cast<int>(coarseWindow.size()); ++i) coarseWindow[i] = window[i * decimation];
+        float coarseBest = 0.0f;
+        int coarseLag = 0;
+        const int coarseMinLag = std::max(2, minLag / decimation);
+        const int coarseMaxLag = std::min(static_cast<int>(coarseWindow.size()) / 2 - 2, maxLag / decimation);
+        // Search coarsely, then refine only around the best period. This keeps
+        // the robustness of autocorrelation without an O(frame*lag*window)
+        // penalty that makes long offline renders needlessly slow.
+        for (int lag = coarseMinLag; lag <= coarseMaxLag; ++lag) {
+            const float value = correlationAt(coarseWindow, lag);
+            if (value > coarseBest) { coarseBest = value; coarseLag = lag; }
+        }
+        const int coarseBestLag = coarseLag * decimation;
         float best = 0.0f;
         int bestLag = 0;
-        // A normalized autocorrelation is deliberately used here instead of a
-        // single FFT peak: it is more stable on breathy vocal harmonics.
-        for (int lag = minLag; lag <= maxLag; ++lag) {
+        for (int lag = std::max(minLag, coarseBestLag - 8); lag <= std::min(maxLag, coarseBestLag + 8); ++lag) {
             const float value = correlationAt(window, lag);
             if (value > best) { best = value; bestLag = lag; }
         }
