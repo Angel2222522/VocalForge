@@ -15,6 +15,11 @@ android {
         versionCode = 1
         versionName = "1.0.0"
 
+        // Target modern arm64 devices first; this keeps the personal APK small.
+        ndk {
+            abiFilters += listOf("arm64-v8a")
+        }
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
 

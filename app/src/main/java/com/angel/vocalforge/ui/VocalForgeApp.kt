@@ -46,6 +46,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -78,7 +79,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.angel.vocalforge.model.PitchSettings
+import com.angel.vocalforge.model.PitchPreset
 import com.angel.vocalforge.model.ScaleKind
+import com.angel.vocalforge.model.applyTo
 import com.angel.vocalforge.model.midiToName
 import com.angel.vocalforge.project.AppScreen
 import com.angel.vocalforge.project.EditorState
@@ -292,6 +295,7 @@ private fun EditorScreen(
                 SettingSlider("Dry / wet", settings.dryWet, "${(settings.dryWet * 100).toInt()}%") { onSettings(settings.copy(dryWet = it), false) }
             } }
             item { ScaleSection(settings, onChange = { onSettings(it, false) }) }
+            item { PresetSection(settings, onChange = { onSettings(it, false) }) }
             item {
                 ControlSection("Manual editing") {
                     Text("Select a region in the editor, then apply a target note or bypass it.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
@@ -339,22 +343,54 @@ private fun SettingSlider(label: String, value: Float, valueLabel: String, range
 
 @Composable
 private fun ScaleSection(settings: PitchSettings, onChange: (PitchSettings) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
+    var rootExpanded by remember { mutableStateOf(false) }
+    var scaleExpanded by remember { mutableStateOf(false) }
+    val noteNames = listOf("C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B")
     ControlSection("Key & scale") {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Root", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
             Box {
-                OutlinedButton(onClick = { expanded = true }) { Text(midiToName(settings.rootMidi)) }
-                DropdownMenu(expanded, { expanded = false }) {
-                    (48..72).forEach { midi -> DropdownMenuItem(text = { Text(midiToName(midi)) }, onClick = { expanded = false; onChange(settings.copy(rootMidi = midi)) }) }
+                OutlinedButton(onClick = { rootExpanded = true }) { Text(midiToName(settings.rootMidi)) }
+                DropdownMenu(rootExpanded, { rootExpanded = false }) {
+                    (48..72).forEach { midi -> DropdownMenuItem(text = { Text(midiToName(midi)) }, onClick = { rootExpanded = false; onChange(settings.copy(rootMidi = midi)) }) }
                 }
             }
             Text("Scale", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
             Box {
-                OutlinedButton(onClick = { expanded = true }) { Text(settings.scaleKind.label) }
-                DropdownMenu(expanded, { expanded = false }) {
-                    ScaleKind.entries.forEach { kind -> DropdownMenuItem(text = { Text(kind.label) }, onClick = { expanded = false; onChange(settings.copy(scaleKind = kind)) }) }
+                OutlinedButton(onClick = { scaleExpanded = true }) { Text(settings.scaleKind.label) }
+                DropdownMenu(scaleExpanded, { scaleExpanded = false }) {
+                    ScaleKind.entries.forEach { kind -> DropdownMenuItem(text = { Text(kind.label) }, onClick = { scaleExpanded = false; onChange(settings.copy(scaleKind = kind)) }) }
                 }
+            }
+        }
+        if (settings.scaleKind == ScaleKind.CUSTOM) {
+            Spacer(Modifier.height(8.dp))
+            Text("Allowed notes", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                noteNames.forEachIndexed { pitchClass, name ->
+                    val bit = 1 shl pitchClass
+                    FilterChip(
+                        selected = settings.customMask and bit != 0,
+                        onClick = {
+                            val newMask = if (settings.customMask == bit) settings.customMask else settings.customMask xor bit
+                            onChange(settings.copy(customMask = newMask))
+                        },
+                        label = { Text(name) }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PresetSection(settings: PitchSettings, onChange: (PitchSettings) -> Unit) {
+    ControlSection("Quality presets") {
+        Text("Presets change the real correction parameters; they are not separate effects.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+        Spacer(Modifier.height(8.dp))
+        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            PitchPreset.entries.forEach { preset ->
+                OutlinedButton(onClick = { onChange(preset.applyTo(settings)) }) { Text(preset.label) }
             }
         }
     }

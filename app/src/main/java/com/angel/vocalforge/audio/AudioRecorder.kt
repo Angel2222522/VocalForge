@@ -59,7 +59,8 @@ class AudioRecorder {
 
     fun stop() {
         if (!running.getAndSet(false)) return
-        job?.cancel()
-        job = null
+        // Let the coroutine finish its blocking read and persist the take.
+        // Cancelling here can discard the recording before the callback runs.
+        recorder?.let { runCatching { it.stop() } }
     }
 }

@@ -9,6 +9,20 @@ enum class ScaleKind(val label: String) {
     CUSTOM("Custom")
 }
 
+enum class PitchPreset(val label: String) {
+    NATURAL("Natural"),
+    STUDIO("Studio"),
+    STRONG("Strong"),
+    HARD_TUNE("Hard Tune")
+}
+
+fun PitchPreset.applyTo(current: PitchSettings): PitchSettings = when (this) {
+    PitchPreset.NATURAL -> current.copy(correctionAmount = .38f, retuneSpeedMs = 180f, humanize = .78f, formantPreservation = .98f, vibratoPreservation = .98f, transition = .82f, dryWet = .82f)
+    PitchPreset.STUDIO -> current.copy(correctionAmount = .68f, retuneSpeedMs = 92f, humanize = .42f, formantPreservation = .95f, vibratoPreservation = .86f, transition = .62f, dryWet = 1f)
+    PitchPreset.STRONG -> current.copy(correctionAmount = .9f, retuneSpeedMs = 35f, humanize = .18f, formantPreservation = .88f, vibratoPreservation = .5f, transition = .38f, dryWet = 1f)
+    PitchPreset.HARD_TUNE -> current.copy(correctionAmount = 1f, retuneSpeedMs = 0f, humanize = 0f, formantPreservation = .72f, vibratoPreservation = .08f, transition = .08f, dryWet = 1f)
+}
+
 data class PitchSettings(
     val rootMidi: Int = 60,
     val scaleKind: ScaleKind = ScaleKind.CHROMATIC,
