@@ -128,6 +128,7 @@ class VocalForgeViewModel(application: Application) : AndroidViewModel(applicati
             store.saveOriginal(id) { WavCodec.write(it, audio, 32) }
             store.updateAudioMetadata(id, audio.sampleRate, audio.durationSeconds)
             _state.update { it.copy(original = audio, processed = null, analysis = emptyList()) }
+            refreshProjects()
             analyzeInternal(id, audio)
         }
     }
@@ -144,6 +145,7 @@ class VocalForgeViewModel(application: Application) : AndroidViewModel(applicati
                 store.saveOriginal(id) { WavCodec.write(it, audio, 32) }
                 store.updateAudioMetadata(id, audio.sampleRate, audio.durationSeconds)
                 _state.update { it.copy(original = audio, processed = null, analysis = emptyList()) }
+                refreshProjects()
                 analyzeInternal(id, audio)
             }
         }
@@ -187,6 +189,7 @@ class VocalForgeViewModel(application: Application) : AndroidViewModel(applicati
             }
             store.saveProcessed(id) { WavCodec.write(it, AudioBuffer(output, audio.sampleRate), 32) }
             _state.update { it.copy(processed = AudioBuffer(output, audio.sampleRate), progress = RenderProgress(1f, "Render complete")) }
+            refreshProjects()
         }
     }
 
