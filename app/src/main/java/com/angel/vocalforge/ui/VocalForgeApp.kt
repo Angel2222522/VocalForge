@@ -368,9 +368,13 @@ private fun ScaleSection(settings: PitchSettings, onChange: (PitchSettings) -> U
             Text("Allowed notes", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
             Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 noteNames.forEachIndexed { pitchClass, name ->
+                    val bit = 1 shl pitchClass
                     FilterChip(
-                        selected = settings.customMask and (1 shl pitchClass) != 0,
-                        onClick = { onChange(settings.copy(customMask = settings.customMask xor (1 shl pitchClass))) },
+                        selected = settings.customMask and bit != 0,
+                        onClick = {
+                            val newMask = if (settings.customMask == bit) settings.customMask else settings.customMask xor bit
+                            onChange(settings.copy(customMask = newMask))
+                        },
                         label = { Text(name) }
                     )
                 }
