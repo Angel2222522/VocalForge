@@ -15,7 +15,7 @@ class NativeDspInstrumentedTest {
     fun detectsKnownMusicalTone() {
         val sampleRate = 48_000
         val frequency = 220f
-        val audio = FloatArray(sampleRate * 2) { i -> (0.65 * sin(2.0 * PI * frequency * i / sampleRate)).toFloat() }
+        val audio = FloatArray(sampleRate) { i -> (0.65 * sin(2.0 * PI * frequency * i / sampleRate)).toFloat() }
         val frames = NativeAudioEngine.decodeAnalysis(NativeAudioEngine.analyze(audio, sampleRate))
         val voiced = frames.filter { it.voiced && it.confidence > .3f }
         assertTrue("No voiced frames were detected", voiced.isNotEmpty())
