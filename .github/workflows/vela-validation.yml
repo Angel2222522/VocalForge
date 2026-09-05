@@ -48,7 +48,9 @@ jobs:
           disable-animations: true
           script: |
             cd VelaTune && ./gradlew --no-daemon :app:connectedDebugAndroidTest
+            adb install -r VelaTune/app/build/outputs/apk/debug/app-debug.apk
             adb shell am start -W -n gr.anelix.velatune.validation/gr.anelix.velatune.MainActivity
+            adb shell uiautomator dump /sdcard/vela-ui.xml
             adb shell screencap -p /sdcard/vela.png
             adb pull /sdcard/vela.png VelaTune/evidence/android-screen.png
             adb logcat -d > VelaTune/evidence/android-logcat.txt
