@@ -97,7 +97,7 @@ public final class AudioService extends Service {
         }
         if(START.equals(action)) {
             try {
-                if(Build.VERSION.SDK_INT>=29)startForeground(42,notification(),ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
+                if(Build.VERSION.SDK_INT>=30)startForeground(42,notification(),ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
                 else startForeground(42,notification());
             }
             catch(RuntimeException e) {

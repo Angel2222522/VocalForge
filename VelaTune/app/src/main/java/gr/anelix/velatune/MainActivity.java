@@ -66,7 +66,7 @@ public final class MainActivity extends Activity {
     }
     ;
     @Override public void onCreate(Bundle saved) {
-        super.onCreate();
+        super.onCreate(saved);
         d=new Design(this);
         p=TuneSettings.load(this);
         project=ProjectStore.get(this);

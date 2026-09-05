@@ -33,6 +33,25 @@ jobs:
         run: |
           set -o pipefail
           scripts/build-android.sh 2>&1 | tee evidence/android-build.txt
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Android runtime tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          profile: pixel_6
+          disable-animations: true
+          script: |
+            cd VelaTune && ./gradlew --no-daemon :app:connectedDebugAndroidTest
+            adb shell am start -W -n gr.anelix.velatune.validation/gr.anelix.velatune.MainActivity
+            adb shell screencap -p /sdcard/vela.png
+            adb pull /sdcard/vela.png VelaTune/evidence/android-screen.png
+            adb logcat -d > VelaTune/evidence/android-logcat.txt
       - name: Archive APK and reports
         if: always()
         uses: actions/upload-artifact@v4
