@@ -1,0 +1,46 @@
+name: Vela Tune APK
+on:
+  pull_request:
+    paths: ['VelaTune/**', '.github/workflows/vela-validation.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: vela-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: VelaTune
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Install SDK and NDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0' 'ndk;27.2.12479018' 'cmake;3.22.1'
+      - name: Host DSP tests
+        run: scripts/test-host.sh
+      - name: Compile, lint and inspect APK
+        run: |
+          set -o pipefail
+          scripts/build-android.sh 2>&1 | tee evidence/android-build.txt
+      - name: Archive APK and reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: VelaTune-validation
+          retention-days: 14
+          path: |
+            VelaTune/app/build/outputs/apk/debug/*.apk
+            VelaTune/app/build/outputs/apk/androidTest/debug/*.apk
+            VelaTune/app/build/reports/
+            VelaTune/evidence/

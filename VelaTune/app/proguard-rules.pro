@@ -1,0 +1,1 @@
+-keep class gr.anelix.velatune.NativeAudio { *; }
