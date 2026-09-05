@@ -7,5 +7,6 @@ if [ -z "$sdk" ]; then echo 'Set ANDROID_HOME to inspect the APK' >&2; exit 2; f
 apk=app/build/outputs/apk/debug/app-debug.apk
 "$sdk/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$apk"
 "$sdk/build-tools/35.0.0/aapt2" dump badging "$apk"
+"$sdk/build-tools/35.0.0/zipalign" -c -P 16 -v 4 "$apk"
 sha256sum "$apk"
 echo 'This is a debug-signed validation APK, not a signed production release.'

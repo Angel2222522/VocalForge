@@ -202,7 +202,7 @@ public final class MainActivity extends Activity {
         seek=new SeekBar(this);
         seek.setMax(1000);
         seek.setProgress((int)(position*1000));
-        seek.setMinHeight(d.dp(48));
+        seek.setMinimumHeight(d.dp(48));
         seek.setContentDescription("Θέση αναπαραγωγής");
         seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar s,int value,boolean user) {

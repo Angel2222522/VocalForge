@@ -6,6 +6,8 @@ import android.test.InstrumentationTestCase;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.os.ParcelFileDescriptor;
+import java.io.File;
 
 /** Executes real Activity creation and navigation on Android. */
 @SuppressWarnings("deprecation")
@@ -38,6 +40,38 @@ public final class ActivitySmokeTest extends InstrumentationTestCase {
             assertNotNull(find(activity.getWindow().getDecorView(),"●  Εγγραφή"));
         });
         getInstrumentation().waitForIdleSync();
+    }
+    public void testForegroundRecordingCreatesWave() throws Throwable {
+        String pkg=getInstrumentation().getTargetContext().getPackageName();
+        try(ParcelFileDescriptor.AutoCloseInputStream in=new ParcelFileDescriptor.AutoCloseInputStream(
+                getInstrumentation().getUiAutomation().executeShellCommand("pm grant "+pkg+" android.permission.RECORD_AUDIO"))) {
+            byte[] scratch=new byte[1024];
+            while(in.read(scratch)!=-1) { }
+        }
+        Intent intent=new Intent(getInstrumentation().getTargetContext(),MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        activity=getInstrumentation().startActivitySync(intent);
+        getInstrumentation().waitForIdleSync();
+        getInstrumentation().runOnMainSync(()->activity.startForegroundService(
+            new Intent(activity,AudioService.class).setAction(AudioService.START)
+                .putExtra("parameters",TuneSettings.preset(1)).putExtra("record",true).putExtra("monitor",false)));
+        try {
+            long deadline=android.os.SystemClock.elapsedRealtime()+10000;
+            while(!AudioService.running&&android.os.SystemClock.elapsedRealtime()<deadline)Thread.sleep(50);
+            assertTrue(AudioService.message,AudioService.running);
+            Thread.sleep(1500);
+            assertTrue("Audio callback executed",AudioService.meters[9]>0);
+        } finally {
+            getInstrumentation().runOnMainSync(()->activity.startService(new Intent(activity,AudioService.class).setAction(AudioService.STOP)));
+        }
+        long deadline=android.os.SystemClock.elapsedRealtime()+10000;
+        while(AudioService.running&&android.os.SystemClock.elapsedRealtime()<deadline)Thread.sleep(50);
+        assertFalse(AudioService.running);
+        File take=new File(AudioService.lastRecording);
+        assertTrue(AudioService.message,take.isFile());
+        try(WaveFile.Reader reader=new WaveFile.Reader(take)) {
+            assertTrue("Recorded frames",reader.frames>0);
+        }
     }
     @Override protected void tearDown() throws Exception {
         if(activity!=null)getInstrumentation().runOnMainSync(()->activity.finish());

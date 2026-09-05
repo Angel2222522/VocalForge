@@ -89,7 +89,7 @@ public final class ControlPanel {
     private void slider(LinearLayout parent,String name,int index,float min,float max,String unit) {
         TextView label=d.text("",13,Design.TEXT);
         SeekBar bar=new SeekBar(activity);
-        bar.setMinHeight(d.dp(48));
+        bar.setMinimumHeight(d.dp(48));
         bar.setMax(1000);
         bar.setProgress(Math.round((p[index]-min)/(max-min)*1000));
         Runnable update=()->label.setText(name+"  "+Math.round(unit.equals("%")?p[index]*100:p[index])+unit);
