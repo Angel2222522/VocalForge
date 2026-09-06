@@ -1,6 +1,6 @@
 # Κατάσταση επικύρωσης
 
-**Release απόφαση: BLOCKED / UNFINISHED.** Το Definition of Done του χρήστη δεν καλύπτεται. Η αποθήκευση αυτού του project είναι παράδοση της πραγματικής δουλειάς που έγινε, όχι πιστοποίηση λειτουργικής επαγγελματικής Android εφαρμογής.
+**Release απόφαση: VALIDATION APK / όχι production certification.** Το Definition of Done του χρήστη δεν καλύπτεται. Η αποθήκευση αυτού του project είναι παράδοση της πραγματικής δουλειάς που έγινε, όχι πιστοποίηση λειτουργικής επαγγελματικής Android εφαρμογής.
 
 ## Τι εκτελέστηκε
 
@@ -23,24 +23,24 @@
 
 ## Τι δεν εκτελέστηκε
 
-- Android dependency resolution, Gradle compile, Android lint, D8/R8, NDK cross compile.
-- Δημιουργία, υπογραφή, APK inspection, installation, upgrade.
-- Instrumentation tests: υπάρχουν στον πηγαίο κώδικα, δεν μεταγλωττίστηκαν/εκτελέστηκαν.
+- Upgrade από προηγούμενη υπογεγραμμένη έκδοση και εγκατάσταση σε φυσικό Android κινητό.
 - Πραγματικό microphone/monitoring, DAC/ADC round-trip latency, USB/Bluetooth routing, ARM CPU.
 - Κλήσεις, audio focus/route races, screen-off, process death, rotation, permissions σε συσκευή.
 - Ακουστική δοκιμή με πραγματικούς rap/trap/singing/falsetto/breathy performers.
 - Αντικειμενική πιστοποίηση formant preservation, intelligibility, phasiness ή naturalness σε πραγματική φωνή.
-- Οπτική επιθεώρηση Android UI και TalkBack/μεγάλα fonts.
+- TalkBack, μεγάλα fonts και πλήρης οπτική δοκιμή όλων των μεγεθών οθόνης.
 - Θερμοκρασία, μπαταρία, sustained ARM throttling.
 - LeakSanitizer: εκκίνηση δοκιμάστηκε, αλλά απέτυχε να ανοίξει `/proc/.../task` στο sandbox. Διατηρείται το πραγματικό log στο `leak-sanitizer-unavailable.txt`. Ο έλεγχος ASan/UBSan επαναλήφθηκε με leak detection disabled, χωρίς να κρυφτεί η ξεχωριστή εκκρεμότητα.
 
-## Εμπόδιο build
+## Android build και εκτέλεση
 
-Το περιβάλλον διαθέτει Java17 modules (ο compiler προσπελάστηκε με `java com.sun.tools.javac.Main`) και GCC. Δεν έχει Android SDK, NDK, build tools, emulator, adb ή Gradle cache. Ελέγχθηκαν οι διαθέσιμες γνωστές διαδρομές και αρχεία.
+Το αρχικό τοπικό περιβάλλον δεν είχε SDK/NDK και οι λήψεις toolchain απέτυχαν. Αυτό λύθηκε με εξωτερικό GitHub Actions build, μετά από εξουσιοδότηση του χρήστη, σε απομονωμένο branch του VocalForge. Δεν απαιτείται υπολογιστής για εγκατάσταση του APK.
 
-Οι απόπειρες πρόσβασης σε `dl.google.com`, `services.gradle.org`, GitHub και Maven μέσω της runtime σύνδεσης απέτυχαν με timeouts. Το πραγματικό `scripts/build-android.sh` εκτελέστηκε και κόλλησε πριν από το Gradle compilation στη λήψη της διανομής: `curl: (28) Proxy CONNECT aborted due to timeout`. Το log υπάρχει στο `android-build-attempt.txt`. Η συνεδρία polling ανέφερε ακύρωση network approval πριν επιστραφεί απόφαση. Δεν έγινε παράκαμψη δικτυακού ελέγχου ούτε δημοσίευση σε εξωτερικό build service.
+Πέρασαν Java/NDK cross compilation για ARM64/ARM32/x86_64, Android lint (0 errors), D8/R8, debug και unsigned release packaging, instrumentation APK build, apksigner και zipalign με 16 KB. Οι 11 lint warnings καταγράφονται αυτούσιες. Η προειδοποίηση static Context αφορά application context, όχι αποθηκευμένη Activity.
 
-Το web research εργαλείο μπορούσε να διαβάσει τεκμηρίωση· αυτό δεν σημαίνει ότι το shell μπορούσε να κατεβάσει SDK binaries. Δεν υπάρχει APK hash ή certificate fingerprint επειδή **δεν υπάρχει APK**. Υπάρχουν source file hashes για τα πραγματικά αρχεία του πακέτου.
+Σε Android 15 x86_64 emulator πέρασαν 5 instrumentation tests: native offline render με διατήρηση source και sample count, έλλειψη INTERNET permission, απόρριψη μη έγκυρου sample rate, πλοήγηση μικρόφωνο/ηχογραφήσεις, και foreground εγγραφή WAV με ενεργό native callback. Δεν ελέγχθηκε ανθρώπινη φωνή ή φυσική ακουστική έξοδος.
+
+Η αρχική εκτέλεση αυτών των 5 tests πέρασε, αλλά το μεταγενέστερο screenshot step απέτυχε επειδή το Gradle είχε απεγκαταστήσει το test target. Προστέθηκε επανεγκατάσταση του APK πριν από το screenshot. Τα ακριβή τελικά στοιχεία υπάρχουν στο BUILD-VALIDATION.md.
 
 ## Known limitations και ανοικτά τεχνικά θέματα
 
@@ -51,7 +51,7 @@
 5. **Offline ίδιος αλγόριθμος.** Τα 80 ms offline scheduling δεν τεκμηριώνουν ανώτερη ποιότητα. Απαιτείται συγκριτικό render με Signalsmith/Rubber Band/WORLD.
 6. **Δεν υπάρχει αυτόματη κλίμακα.** Δεν εμφανίζεται επινοημένη βεβαιότητα.
 7. **Live take preroll.** Το αποθηκευμένο live take περιλαμβάνει τον αρχικό DSP χρόνο και το flushed tail. Ακριβής ευθυγράμμιση με εξωτερικό beat χρειάζεται μετρημένο routing latency.
-8. **UI και NativeAudio adapter unbuilt.** Μπορεί να υπάρχουν API/Gradle/NDK ή lifecycle σφάλματα που το Java syntax parse δεν εντοπίζει. Κανένας ισχυρισμός «δεν υπάρχουν crashes» δεν τεκμηριώνεται χωρίς runtime.
+8. **Περιορισμένη κάλυψη Android συσκευών.** Έγινε πραγματικό build και εκτέλεση σε emulator Android 15. Αυτό δεν αποκλείει lifecycle/routing προβλήματα σε διαφορετικούς κατασκευαστές ή φυσικό hardware.
 9. **Ουρά recording / clocks.** Αλλαγές συσκευής διακόπτουν τη συνεδρία αντί αυτόματου hot-switch. Input/output clock drift και error callback teardown χρειάζονται ιδιαίτερο physical stress test.
 10. **Εξαγωγή/ακύρωση.** Ακυρωμένη εγγραφή σε SAF destination μπορεί να αφήσει μερικό αρχείο στον προορισμό. Το τοπικό source/result παραμένει ανέπαφο. Δεν υπάρχει διαχείριση/διαγραφή παλαιών projects από το UI· αρχεία καταλαμβάνουν χώρο μέχρι export/διαχείριση εφαρμογής.
 11. **Codec support εξαρτώμενο από Android.** Ο κώδικας απορρίπτει μη υποστηριζόμενα formats. Δεν υπόσχεται κάθε παραλλαγή AAC/FLAC/OGG σε κάθε κατασκευαστή.
@@ -59,11 +59,11 @@
 
 ## Επόμενα αναγκαία gates
 
-1. Εκτέλεση `scripts/build-android.sh` με επιτρεπόμενη πρόσβαση toolchain. Διόρθωση κάθε πραγματικού compiler/lint error χωρίς απενεργοποίηση gates.
-2. Έλεγχος package, permissions, ABI, alignment 16 KB, native symbols, debuggable flag, signing certificate και SHA-256 ακριβούς APK.
+1. Build/compiler/lint gates ολοκληρώθηκαν. Διατήρηση των ίδιων gates στις επόμενες αλλαγές.
+2. APK signature/package/ABI/alignment gates ολοκληρώθηκαν. Production signing identity και ασφαλής δυνατότητα upgrade παραμένουν ξεχωριστά εκκρεμή.
 3. Εγκατάσταση σε Android27/30/35 και τουλάχιστον μία πραγματική ARM64 συσκευή. Εκτέλεση instrumentation tests.
 4. Mic denied/revoked, μικρός χώρος, malformed import, μακρύ render, cancel, κλήση, USB unplug/replug, rotate, screen-off, process kill, γρήγορα start/stop 100 φορές.
 5. Ακουστικό loopback και τουλάχιστον 20 μετρήσεις routing σε κάθε έξοδο. Έπειτα real vocal A/B ακρόαση και optimization latency/quality.
 6. Πραγματικό visual review κάθε οθόνης σε μικρό κινητό, landscape, μεγάλα fonts και TalkBack.
 
-Μόνο μετά από αυτά μπορεί να υπογραφεί απόφαση release ή να παρουσιαστεί η εφαρμογή ως λειτουργική στο κινητό.
+Το APK παραδίδεται για εγκατάσταση και πραγματική δοκιμή. Απόφαση επαγγελματικού production release απαιτεί τα εκκρεμή physical και acoustic gates.

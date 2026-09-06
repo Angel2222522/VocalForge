@@ -1,7 +1,7 @@
 # Vela Tune — 0.1.0 validation
 
-**Η εφαρμογή δεν είναι ολοκληρωμένο επαγγελματικό παραδοτέο. Δεν υπάρχει APK σε αυτό το πακέτο.**
-Υπάρχει πραγματικός C++ pitch-correction πυρήνας, εκτελεσμένα host tests, Android πηγαίος κώδικας και ρυθμίσεις build. Η Android εφαρμογή δεν μεταγλωττίστηκε ούτε εκτελέστηκε: λείπουν SDK/NDK/Gradle και οι λήψεις toolchain εμποδίστηκαν από το περιβάλλον δικτύου. Δεν έχει αποδειχθεί ότι το project κάνει Android build χωρίς διορθώσεις.
+**Υπάρχει πραγματικό υπογεγραμμένο APK δοκιμών. Η επαγγελματική ποιότητα και η φυσική end-to-end latency παραμένουν μη πιστοποιημένες.**
+Η εφαρμογή μεταγλωττίστηκε στο GitHub Actions, για ARM64, ARM32 και x86_64, με πραγματικό C++ pitch correction. Πέρασαν Android lint, debug/release compilation, instrumentation APK compilation, υπογραφή και zip alignment. Η ακριβής καταγραφή της εκτέλεσης βρίσκεται στο `docs/BUILD-VALIDATION.md` και στα συνοδευτικά logs.
 
 Δεν ονομάζουμε τα synthetic tests δοκιμή πραγματικού τραγουδιστή. Δεν ονομάζουμε τον χρόνο υπολογισμού end-to-end latency. Το Definition of Done του αιτήματος **δεν έχει επιτευχθεί**.
 
@@ -14,9 +14,9 @@
 - `docs/`: τεχνικές επιλογές, όρια, πραγματικοί/εκκρεμείς έλεγχοι, διαδικασία μέτρησης συσκευής.
 - `licenses/`: άδειες κώδικα και γραμματοσειρών.
 
-## Απλή χρήση όταν υπάρχει ελεγμένο APK
+## Εγκατάσταση και χρήση
 
-1. Εγκατάσταση APK στο κινητό. Το ZIP αυτού του πακέτου **δεν** εγκαθίσταται ως εφαρμογή.
+1. Άνοιξε το συνοδευτικό `VelaTune-0.1.0-validation.apk` σε Android 8.1 ή νεότερο και επίτρεψε την εγκατάσταση από τον browser/διαχειριστή αρχείων, εάν ζητηθεί. Το ZIP είναι ο πηγαίος κώδικας.
 2. Σύνδεση ενσύρματων ή USB ακουστικών.
 3. Επιλογή τονικής και κλίμακας. Αν δεν τις γνωρίζεις, η Χρωματική διορθώνει στην κοντινότερη νότα, αλλά δεν γνωρίζει την αρμονία του beat.
 4. Ενεργοποίηση ακρόασης και πάτημα Εγγραφή. Η άδεια μικροφώνου ζητείται εκείνη τη στιγμή.
@@ -33,7 +33,7 @@
 
 ## Build για τεχνική συνέχεια
 
-Δεν μεταφέρεται στον Άγγελο η απαίτηση να βρει υπολογιστή: οι οδηγίες καταγράφουν την ακριβή συνέχεια για περιβάλλον ανάπτυξης. Το εγκαταστάσιμο παραδοτέο παραμένει εκκρεμές.
+Οι παρακάτω οδηγίες είναι για αναπαραγωγή του build. Η εγκατάσταση και χρήση του APK δεν απαιτούν υπολογιστή.
 
 Απαιτούνται JDK 17, Android SDK 35 / Build Tools 35.0.0, NDK 27.2.12479018, CMake 3.22.1, Gradle 8.11.1 και πρόσβαση σε Google Maven/Maven Central/Gradle distributions. Το AGP είναι 8.9.2, Oboe 1.9.3. Βλ. `app/build.gradle`.
 
@@ -46,7 +46,7 @@ export ANDROID_HOME=/absolute/path/to/android-sdk
 
 Το build script ζητά lint, debug, release και instrumentation APK compilation και ελέγχει την υπογραφή του debug APK. Το debug package είναι `gr.anelix.velatune.validation`. Το release package `gr.anelix.velatune`, versionCode 1, minSdk 27, targetSdk 35. Το release παραμένει unsigned μέχρι να δοθεί πραγματική release signing identity· δεν βαφτίζουμε debug key «production».
 
-Το `.github/workflows/android.yml` ορίζει δωρεάν-compatible αυτοματοποίηση build, αλλά **δεν έχει εκτελεστεί** και δεν δημιουργήθηκε/δημοσιεύτηκε GitHub repository. Δεν υποθέτει ενεργή συνδρομή υπηρεσίας.
+Το εξωτερικό build εκτελέστηκε στο [VocalForge, PR 4](https://github.com/Angel2222522/VocalForge/pull/4), σε ξεχωριστό branch και υποφάκελο VelaTune. Το main και η προηγούμενη εφαρμογή VocalForge δεν αντικαταστάθηκαν. Το `ci-external.yml` είναι το workflow αυτού του build, τοποθετημένο στο root του εξωτερικού repository ως `.github/workflows/vela-validation.yml`.
 
 ## Επανάληψη των host tests
 
