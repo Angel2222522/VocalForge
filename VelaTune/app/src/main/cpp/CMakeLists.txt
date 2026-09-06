@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.22.1)
+project(velatune LANGUAGES CXX)
+find_package(oboe REQUIRED CONFIG)
+add_library(velatune SHARED NativeAudio.cpp ../../../../dsp/TuneEngine.cpp)
+target_include_directories(velatune PRIVATE ../../../../dsp)
+target_link_libraries(velatune PRIVATE oboe::oboe android log)
+target_compile_features(velatune PRIVATE cxx_std_17)
+target_compile_options(velatune PRIVATE -Wall -Wextra)
